@@ -3,8 +3,8 @@
   ros__parameters:
 
     subs:
-      image_topic: "/image"
-      camera_info_topic: "/camera_info"
+      image_topic: "/oak/rgb/image_raw"
+      camera_info_topic: "/oak/rgb/camera_info"
 
     pubs:
       aruco_image: "/aruco_detector/image"
@@ -13,14 +13,14 @@
 
     logger_service_name: "/toggle_marker_logger"
 
-    detect_board: true  # Set to true to detect aruco boards
-    visualize: true  # Set to true to draw the detected markers and board on the image
+    detect_board: false  # Set to true to detect aruco boards
+    visualize: false  # Set to true to draw the detected markers and board on the image
     log_markers: false  # Set to true to log the detected markers
 
       # TAC ARUCO PARAMETERS
     aruco:
-      marker_size: 0.150
-      dictionary: "DICT_ARUCO_ORIGINAL"
+      marker_size: 0.2
+      dictionary: "DICT_6X6_250"
 
 
     #TAC ARUCO BOARD PARAMETERS
