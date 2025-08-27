@@ -42,6 +42,9 @@ ArucoDetectorNode::ArucoDetectorNode(const rclcpp::NodeOptions& options)
 
     std::string aruco_poses_topic =
         this->declare_parameter<std::string>("pubs.aruco_poses");
+    
+    std::string aruco_markers_topic =
+        this->declare_parameter<std::string>("pubs.aruco_markers");
 
     std::string board_pose_topic =
         this->declare_parameter<std::string>("pubs.board_pose");
@@ -49,8 +52,11 @@ ArucoDetectorNode::ArucoDetectorNode(const rclcpp::NodeOptions& options)
     marker_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(
         aruco_image_topic, qos_sensor_data);
 
-    marker_pose_pub_ = this->create_publisher<aruco_detector::msg::ArucoMarkers>(
+    marker_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>(
         aruco_poses_topic, qos_sensor_data);
+
+    marker_pose_with_id_pub_ = this->create_publisher<aruco_detector::msg::ArucoMarkers>(
+        aruco_markers_topic, qos_sensor_data);
 
     board_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(
         board_pose_topic, qos_sensor_data);
@@ -219,6 +225,7 @@ void ArucoDetectorNode::imageCallback(
         rvecs, tvecs);
 
     aruco_detector::msg::ArucoMarkers aruco_markers_msg;
+    geometry_msgs::msg::PoseArray aruco_poses_msg;
 
     for (size_t i = 0; i < marker_ids.size(); i++) {
         if (log_markers_) {
@@ -239,14 +246,17 @@ void ArucoDetectorNode::imageCallback(
 
         auto pose_msg = cv_pose_to_ros_pose_stamped(tvec, quat, msg->header);
         
-        // Add to custom message
+        // Add messages
         aruco_markers_msg.marker_ids.push_back(marker_ids[i]);
         aruco_markers_msg.poses.push_back(pose_msg.pose);
+        aruco_poses_msg.poses.push_back(pose_msg.pose);
     }
 
-    // Publish custom message with marker IDs and poses
+    // Publish messages
     aruco_markers_msg.header = msg->header;
-    marker_pose_pub_->publish(aruco_markers_msg);
+    marker_pose_with_id_pub_->publish(aruco_markers_msg);
+    aruco_poses_msg.header = msg->header;
+    marker_pose_pub_->publish(aruco_poses_msg);
 
     if (visualize_) {
         cv::aruco::drawDetectedMarkers(input_image, marker_corners, marker_ids);

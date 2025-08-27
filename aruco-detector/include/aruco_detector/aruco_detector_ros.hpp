@@ -82,10 +82,15 @@ class ArucoDetectorNode : public rclcpp::Node {
         camera_info_sub_;
 
     /**
+     * @brief Publishes marker poses
+     */
+    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr
+        marker_pose_pub_;
+    /**
      * @brief Publishes marker poses with IDs using custom ArucoMarkers message
      */
     rclcpp::Publisher<aruco_detector::msg::ArucoMarkers>::SharedPtr
-        marker_pose_pub_;
+        marker_pose_with_id_pub_;
     /**
      * @brief Publishes the image with the markers visualized if visualization
      * param is set. visualizes the board pose if board detection is set.

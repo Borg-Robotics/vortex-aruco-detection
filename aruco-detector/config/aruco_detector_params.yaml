@@ -8,7 +8,8 @@
 
     pubs:
       aruco_image: "/aruco_detector/image"
-      aruco_poses: "/aruco_detector/markers"
+      aruco_poses: "/aruco_detector/poses"
+      aruco_markers: "/aruco_detector/markers"
       board_pose: "/aruco_detector/board"
 
     logger_service_name: "/toggle_marker_logger"
