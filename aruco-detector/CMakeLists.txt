@@ -10,11 +10,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV 4.5.4 REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -25,6 +27,12 @@ find_package(fmt REQUIRED)
 include_directories(include)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+# Generate interfaces
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/ArucoMarkers.msg"
+  DEPENDENCIES geometry_msgs std_msgs
+)
+
 set(LIB_NAME "${PROJECT_NAME}_component")
 
 add_library(${LIB_NAME} SHARED
@@ -33,7 +41,7 @@ add_library(${LIB_NAME} SHARED
   src/aruco_file_logger.cpp
 )
 
-target_link_libraries(${LIB_NAME} PUBLIC
+target_link_libraries(${LIB_NAME}
   ${OpenCV_LIBS}
   Eigen3::Eigen
   fmt::fmt
@@ -45,17 +53,22 @@ target_include_directories(${LIB_NAME} PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(${LIB_NAME} PUBLIC
+ament_target_dependencies(${LIB_NAME}
   rclcpp
   rclcpp_components
   sensor_msgs
   geometry_msgs
+  std_msgs
   tf2
   cv_bridge
   std_srvs
   spdlog
   fmt
 )
+
+# Link generated interfaces using modern approach
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(${LIB_NAME} "${cpp_typesupport_target}")
 
 rclcpp_components_register_node(
     ${LIB_NAME}
@@ -65,6 +78,7 @@ rclcpp_components_register_node(
 
 # Export the target for other packages to use
 ament_export_targets(export_${LIB_NAME})
+ament_export_dependencies(rosidl_default_runtime)
 
 install(TARGETS ${LIB_NAME}
   EXPORT export_${LIB_NAME}

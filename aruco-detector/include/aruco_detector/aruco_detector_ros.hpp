@@ -12,6 +12,8 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <tuple>
 
+#include <aruco_detector/msg/aruco_markers.hpp>
+
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <Eigen/Dense>
@@ -80,9 +82,9 @@ class ArucoDetectorNode : public rclcpp::Node {
         camera_info_sub_;
 
     /**
-     * @brief Publishes marker poses as a PoseArray
+     * @brief Publishes marker poses with IDs using custom ArucoMarkers message
      */
-    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr
+    rclcpp::Publisher<aruco_detector::msg::ArucoMarkers>::SharedPtr
         marker_pose_pub_;
     /**
      * @brief Publishes the image with the markers visualized if visualization

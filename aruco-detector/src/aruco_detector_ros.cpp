@@ -49,7 +49,7 @@ ArucoDetectorNode::ArucoDetectorNode(const rclcpp::NodeOptions& options)
     marker_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(
         aruco_image_topic, qos_sensor_data);
 
-    marker_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>(
+    marker_pose_pub_ = this->create_publisher<aruco_detector::msg::ArucoMarkers>(
         aruco_poses_topic, qos_sensor_data);
 
     board_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(
@@ -218,7 +218,7 @@ void ArucoDetectorNode::imageCallback(
         marker_corners, marker_size_, camera_matrix_, distortion_coefficients_,
         rvecs, tvecs);
 
-    geometry_msgs::msg::PoseArray pose_array;
+    aruco_detector::msg::ArucoMarkers aruco_markers_msg;
 
     for (size_t i = 0; i < marker_ids.size(); i++) {
         if (log_markers_) {
@@ -238,11 +238,15 @@ void ArucoDetectorNode::imageCallback(
         tf2::Quaternion quat = rvec_to_quat(rvec);
 
         auto pose_msg = cv_pose_to_ros_pose_stamped(tvec, quat, msg->header);
-        pose_array.poses.push_back(pose_msg.pose);
+        
+        // Add to custom message
+        aruco_markers_msg.marker_ids.push_back(marker_ids[i]);
+        aruco_markers_msg.poses.push_back(pose_msg.pose);
     }
 
-    pose_array.header = msg->header;
-    marker_pose_pub_->publish(pose_array);
+    // Publish custom message with marker IDs and poses
+    aruco_markers_msg.header = msg->header;
+    marker_pose_pub_->publish(aruco_markers_msg);
 
     if (visualize_) {
         cv::aruco::drawDetectedMarkers(input_image, marker_corners, marker_ids);
